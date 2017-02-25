@@ -8,11 +8,17 @@
 
 <?php
 error_reporting(E_ERROR);
-$user = 'root';
-$pass = 'pass';
-$host = '127.0.0.1';
-$db = 'dump';
 
+/*get DB credentials */
+$host = $_GET['host'];
+$user = $_GET['user'];
+$pass = $_GET['pass'];
+$db = $_GET['db'];
+
+/* To append to URL when we need to call this file internally */
+$getstring = "&host=$host&user=$user&pass=$pass&db=$db";
+
+/*Initializing connection */
 $conn = new mysqli($host, $user, $pass, $db);
 
 if($conn->connect_error)
@@ -20,36 +26,54 @@ if($conn->connect_error)
 	echo "Unable to connect to database, reason:  <b>$conn->connect_error</b><br>";
 	exit();
 }
+/* So we don't get unnecessary callback with SQL shell */ 
 if(!isset($_GET['query']))
 {
 	echo "Connected to <b>$db</b> at <b>$host</b> with user <b>$user</b><br><br><br>";
 }
+
 /*
 TODO: 
 FIX FUNCTIONS
 CANT GET $conn OBJECT PASSING TO WORK PROPERLY 
+
+TODO:
+PROTECT FROM XSS
 */
 
+/* get function type */
 $function_type = $_GET['type'];
 
+/* Set default to structure */
 if(!isset($function_type) || $function_type == "")
 {
-	header("Location: db-extract.php?type=structure");
+	header("Location: db-extract.php?type=structure$getstring");
 }
 
+/* get structure of tables */
 if($function_type == "structure")
 {
+	/*Get all tables in database */
 	$table_result = $conn->query("SHOW TABLES");
 
+	/*loop over every table */
 	while($table_row = $table_result->fetch_assoc())
 	{
+
+		/* which table we are working in */
 		$current_table = $table_row["Tables_in_$db"];
+
 		echo "TABLE: $current_table: <br>";
 
+		/* get all columns in $current_table */
 		$column_result = $conn->query("show columns from $current_table");
 
+		/* Loop over columns */
 		while($column_row = $column_result->fetch_assoc())
 		{
+			/* Get all fields from $column_row */
+
+			/* TODO: use foreach for this */
 			$field_column = $column_row["Field"];
 			$type_column = $column_row["Type"];
 			$null_column = $column_row["Null"];
@@ -57,6 +81,7 @@ if($function_type == "structure")
 			$default_column = $column_row["Default"];
 			$extra_column = $column_row["Extra"];
 
+			/* For better output */
 			if($key_column == "")
 			{
 				$key_column = "NONE";
@@ -72,7 +97,11 @@ if($function_type == "structure")
 				$extra_column = "NONE";
 			}
 
-			$padding = '-'; 
+
+			$padding = '-';
+			/* How much '-''s we need to print */
+			/* padding is length of current table name + length of current table name divided by 1.5 + Length of "TABLE: " which is 7 */
+
 			for($i = 1; $i < strlen($current_table) + strlen($current_table) / 1.5 + 7; $i++)
 			{
 				$padding .= "-";
@@ -80,11 +109,13 @@ if($function_type == "structure")
 
 			echo " $padding COLUMN: $field_column <br>";
 
+			/*padding is previous padding + length of current column name + length of current column name divided by 1.5 + Length of "COLUMN: " which is 8 */
 			for($i = 0; $i < strlen($field_column) + strlen($field_column) / 1.5 + 8; $i++)
 			{
 				$padding .= '-';
 			}
 
+			/* print info */
 			echo "$padding TYPE: $type_column <br>";
 			echo "$padding NULL: $null_column <br>";
 			echo "$padding KEY:  $key_column <br>";
@@ -97,31 +128,40 @@ if($function_type == "structure")
 	}
 }
 
+/*dump whole DB */
 if($function_type == "dump")
 {
 	echo "<center>";
 
+	/* get all tables */
 	$table_result = $conn->query("SHOW TABLES");
 
+	/* Loop over every table */
 	while($table_row = $table_result->fetch_assoc())
 	{
+		/* Which table we are in */
 		$current_table = htmlentities($table_row["Tables_in_$db"]);
 		echo "$current_table: <br>";
 
+		/* get all columns from table */
 		$column_result = $conn->query("show columns from $current_table");
 
+		/* Prepare table */
 		echo "<table>
 				<tr>";
 
+		/* Print field names as headers in table*/
 		while($column_row = $column_result->fetch_assoc())
 		{
 			$field_column = htmlentities($column_row["Field"]);
 			echo "<th>$field_column</th>";
 		}
 		echo "</tr>";
-		
+
+		/* Get all content from table */
 		$content_result = $conn->query("select * from $current_table");
 
+		/*Print all content as bodies in table */
 		while($content_row = $content_result->fetch_assoc())
 		{
 			echo "<tr>";
@@ -139,26 +179,48 @@ if($function_type == "dump")
 
 }
 
+/* SQL console */
 if($function_type == "console")
 {
+	/*Check if query parameter exists */
 	if(isset($_GET['query']))
 	{
+		/* Validiating */
+		if($_GET['query'] == '')
+		{
+			echo "Please enter something first";
+			exit();
+		}
+
+		/* if we want a response */
 		if($_GET['response'] == 'true')
 		{
+			/*execute query */
 			$result = $conn->query($_GET['query']);
+
+			/* Troubleshooting help */
 			if($conn->error)
 			{
 				echo $conn->error;
 				exit();
 
 			}
+			/* Prepare table */
 			echo "<table>
 					<tr>";
+
+			/* Loop over query result and print column names as header in table*/
 			foreach($result->fetch_assoc() as $key => $value)
 			{
 				echo "<th>$key</th>";
 			}
+
 			echo "</tr>";
+
+			/* Needed to reset fetch_assoc() */
+			$result = $conn->query($_GET['query']);
+
+			/*Print all content in table */
 			while($content = $result->fetch_assoc())
 			{
 				echo "<tr>";
@@ -169,31 +231,38 @@ if($function_type == "console")
 				echo "</tr>";
 			}
 		}
+
+		/*If we don't want a response*/
 		else
 		{
+			/* execute query */
 			$conn->query($_GET['query']);
 			exit();
 		}
 		
 	}
+
+	/* Print basic form otherwise */ 
 	else
 	{
-		echo "<center> 
+		echo "<center>
 		Query:
 		<input style='width: 75%;' type='text' id='query' />
 		<br>
 		Callback:
-		<input type='checkbox' id='callback' />
+		<input type='checkbox' id='callback' checked />
 		<br>
 		<input type='button' value='Submit' onclick='sendrequest()'/><br><br>
-
 		<div id='response'>
 		</div>";
 	}
 }
 ?>
 
+
 <script type="text/javascript">
+
+/* AJAX for console */
 function sendrequest() {
     var xmlhttp = new XMLHttpRequest();
 
@@ -211,7 +280,8 @@ function sendrequest() {
         }
     };
 
-    xmlhttp.open("GET", "db-extract.php?type=console&query=" + document.getElementById('query').value + "&response=" + document.getElementById('callback').checked, true);
+    xmlhttp.open("GET", "db-extract.php?type=console&query=" + document.getElementById('query').value + "&response=" + document.getElementById('callback').checked +  <?php echo '"' . $getstring . '"';?>, true);
     xmlhttp.send();
 }
+
 </script>
