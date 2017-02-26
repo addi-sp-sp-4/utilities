@@ -1,0 +1,170 @@
+<style>
+	.main-content {
+		width: 50%;
+		background-color: white;
+		margin: auto;
+		outline: 1px solid black;
+    	padding: 10px;
+    	color: #222222;
+    	text-align: left;
+	}
+	body {
+		background-color: #222222;
+	}
+
+	hr {
+		color: black;
+		width: 20%;
+		margin: 0px;
+	}
+
+	li {
+		display: list-item;
+	}
+	</style> 
+	<body>
+		<div id='main-content' class='main-content'>
+			<h1>Documentation</h1>
+			<br>
+			<b>*DISCLAIMER*: </b>
+			I know putting everything in one big php file is not a great idea,<br>
+			but this file is meant as a fast multifunctional script to deploy
+			on web servers.
+			<br>
+			<h2>Parameter options:</h2>
+			<h3>Type parameter:</h3>
+			<ol>
+				<li> <a href='#structure'>structure</a> </li>
+				<li> <a href='#dump'>dump</a> </li>
+				<li> <a href='#console'>console</a> </li>
+				<li> <a href='#copy-db'>copy-db</a> </li>
+				<li> <a href='#docs'>docs</a> </li>
+			</ol>
+			<p>
+				The 'type' parameter is the parameter which decides the type <br>
+				of the action you are executing.
+			</p>
+
+			<h4 id='structure'>structure:</h4>
+			<ol>
+				<p>
+					If the type parameter is 'structure', the structure of all the tables
+					<br>
+					will be dumped
+				</p>
+
+				<h5>Required parameters:</h5>
+
+				<ol>
+					<li><b>host:</b> Host of the server. If working with a local db, '127.0.0.1' as value should work </li>
+					<li><b>user:</b> User you are working with.</li>
+					<li><b>pass:</b> Password of the user you are working with. </li>
+					<li><b>db:</b> Database you are working with. </li>
+				</ol>
+
+				<h5>Optional parameters: </h5>
+			
+				<ol>
+					<li><b>None</b></li>
+				</ol>
+
+			</ol>
+
+			<h4 id='dump'>dump:</h4>
+			<ol>
+				<p>
+					If the type parameter is 'dump', the content of all the tables
+					<br>
+					will be dumped
+				</p>
+
+				<h5>Required parameters:</h5>
+
+				<ol>
+					<li><b>host:</b> Host of the server. If working with a local db, '127.0.0.1' as value should work </li>
+					<li><b>user:</b> User you are working with.</li>
+					<li><b>pass:</b> Password of the user you are working with. </li>
+					<li><b>db:</b> Database you are working with. </li>
+				</ol>
+
+				<h5>Optional parameters: </h5>
+			
+				<ol>
+					<li><b>None</b></li>
+				</ol>
+
+			</ol>
+
+			<h4 id='console'>console:</h4>
+			<ol>
+				<p>
+					If the type parameter is 'console', you will get an SQL shell
+					<br>
+					with optional callback.
+				</p>
+
+				<h5>Required parameters:</h5>
+
+				<ol>
+					<li><b>host:</b> Host of the server. If working with a local db, '127.0.0.1' as value should work </li>
+					<li><b>user:</b> User you are working with.</li>
+					<li><b>pass:</b> Password of the user you are working with. </li>
+					<li><b>db:</b> Database you are working with. </li>
+				</ol>
+
+				<h5>Optional parameters: </h5>
+			
+				<ol>
+					<li><b>query:</b> Used to directly submit a query, without interface</li>
+					<li><b>callback:</b> to be used in conjunction with the <b>query</b> parameter.<br>if set to true, you will recieve output</li>
+				</ol>
+
+			</ol>
+
+			<h4 id='copy-db'>copy-db:</h4>
+			<ol>
+				<p>
+					If the type parameter is 'copy-db', a downloadable database backup is made.
+					<br>
+					It is strongly advised to use this function with a tool like wget, otherwise your browser might crash
+				</p>
+
+				<h5>Required parameters:</h5>
+
+				<ol>
+					<li><b>host:</b> Host of the server. If working with a local db, '127.0.0.1' as value should work </li>
+					<li><b>user:</b> User you are working with.</li>
+					<li><b>pass:</b> Password of the user you are working with. </li>
+					<li><b>db:</b> Database you are working with. </li>
+				</ol>
+
+				<h5>Optional parameters: </h5>
+			
+				<ol>
+					<li><b>None</b></li>
+				</ol>
+
+			</ol>
+
+			<h4 id='docs'>docs:</h4>
+			<ol>
+				<p>
+					If the type parameter is 'docs', you will get this page.
+				</p>
+
+				<h5>Required parameters:</h5>
+
+				<ol>
+					<li><b>None</b></li>
+				</ol>
+
+				<h5>Optional parameters: </h5>
+			
+				<ol>
+					<li><b>None</b></li>
+				</ol>
+
+			</ol>
+		
+		</div>
+	</body>
