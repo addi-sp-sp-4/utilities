@@ -1,10 +1,3 @@
-<style>
- table, th, td {
-    outline: 1px solid black;
-}
-</style>
-
-
 
 <?php
 error_reporting(E_ERROR);
@@ -14,6 +7,10 @@ $host = $_GET['host'];
 $user = $_GET['user'];
 $pass = $_GET['pass'];
 $db = $_GET['db'];
+$name = $_GET['name'];
+
+/* get function type */
+$function_type = $_GET['type'];
 
 /* To append to URL when we need to call this file internally */
 $getstring = "&host=$host&user=$user&pass=$pass&db=$db";
@@ -23,13 +20,20 @@ $conn = new mysqli($host, $user, $pass, $db);
 
 if($conn->connect_error)
 {
-	echo "Unable to connect to database, reason:  <b>$conn->connect_error</b><br>";
-	exit();
+	if($function_type != "docs")
+	{
+		echo "Unable to connect to database, reason:  <b>$conn->connect_error</b><br>";
+	}
 }
-/* So we don't get unnecessary callback with SQL shell */ 
-if(!isset($_GET['query']))
+
+
+
+/* So we don't get unnecessary callback with SQL shell or copy-db*/ 
+if(!$conn->connect_error && !isset($_GET['query']) && $function_type != "copy-db")
 {
-	echo "Connected to <b>$db</b> at <b>$host</b> with user <b>$user</b><br><br><br>";
+	echo "Connected to <b>$db</b> at <b>$host</b> with user <b>$user</b><br>";
+	$jsonData = json_decode(file_get_contents('https://api.ipify.org?format=json'));
+	echo "the IP this web server has is <b>$jsonData->ip</b><br><br>";
 }
 
 /*
@@ -41,8 +45,8 @@ TODO:
 PROTECT FROM XSS
 */
 
-/* get function type */
-$function_type = $_GET['type'];
+
+
 
 /* Set default to structure */
 if(!isset($function_type) || $function_type == "")
@@ -245,7 +249,7 @@ if($function_type == "console")
 	/* Print basic form otherwise */ 
 	else
 	{
-		echo "<center>
+		?>
 		Query:
 		<input style='width: 75%;' type='text' id='query' />
 		<br>
@@ -255,7 +259,24 @@ if($function_type == "console")
 		<input type='button' value='Submit' onclick='sendrequest()'/><br><br>
 		<div id='response'>
 		</div>";
+
+		<?php
 	}
+}
+
+/* Make copy of database */
+if($function_type == "copy-db")
+{
+	
+	/*execute mysqldump */
+	$cmd = "mysqldump --host='$host' -u '$user' -p$pass '$db'";
+	$dump = shell_exec($cmd);
+	echo $dump;
+	exit();
+}
+if($function_type == "docs")
+{
+	echo file_get_contents("https://davidbouman.github.io/utilities/php/index.html");
 }
 ?>
 
@@ -285,3 +306,9 @@ function sendrequest() {
 }
 
 </script>
+
+<style>
+ table, th, td {
+    outline: 1px solid black;
+}
+</style>
